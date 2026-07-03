@@ -51,6 +51,7 @@ def parse_requested_info(provider: ImdsProvider) -> set[str]:
         requested_info = list(provider.get_supported_informations())
 
     requested_info = set(requested_info)
+    requested_info = {info.upper() for info in requested_info}
 
     return requested_info
 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
         key = (
             f"imds_{CommonInformation[info].name.lower()}"
             if info in CommonInformation.__members__
-            else f"imds_{provider.get_type().name.lower()}_{info}"
+            else f"imds_{provider.get_type().name.lower()}_{info.lower()}"
         )
         try:
             result["ansible_facts"][key] = provider.query(info)
