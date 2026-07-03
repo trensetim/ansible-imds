@@ -1,0 +1,13 @@
+- name: Test the imds_facts module
+  hosts: test
+  gather_facts: false # dont need the other facts for testing this. it just slows us down.
+  tasks:
+    - name: Gather imds facts
+      timtrense.imds.imds_facts:
+        provider: aws
+        query: all
+        allow_failed_queries: [tags]
+        http_timeout_seconds: 0.1
+    - name: Dump test output
+      debug:
+        var: ansible_facts
