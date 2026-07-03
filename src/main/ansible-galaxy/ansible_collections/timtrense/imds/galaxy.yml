@@ -1,0 +1,27 @@
+namespace: timtrense
+name: imds
+version: 1.0.0
+readme: README.md
+authors:
+- Tim Trense <trensetim@gmail.com>
+description: |
+  Work with the instance-metadata-service (IMDS) for various cloud hosting providers (CHP).
+  Supports making common cross-CHP-available things CHP-agnostic (best-effort),
+  yet retaining the ability to query CHP-specific information.
+license_file: 'LICENSE'
+tags:
+  - IMDS
+  - imds
+  - IMDSv2
+  - cloud
+  - AWS
+  - instance_metadata_service
+dependencies: {}
+repository: https://gitlab.timtrense.com/ansible/imds
+documentation: https://gitlab.timtrense.com/ansible/imds
+homepage: https://gitlab.timtrense.com/ansible/imds
+issues: https://gitlab.timtrense.com/ansible/imds/-/issues
+
+# Some directories and files like 'galaxy.yml', '*.pyc', '*.retry', and '.git' are always filtered.
+build_ignore: []
+
