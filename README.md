@@ -10,3 +10,70 @@ and "VM provisioning" (commonly done via Ansible).
 
 This collections provides facilities to interact with IMDS in a mostly-standardized way.
 Common operations that nearly all of today's major CHPs implement, are abstracted and offered in a CHP-agnostic way.
+
+# Development status
+
+As of today:
+- There is just one module `imds_facts`, which queries for requested information.
+- Only AWS is supported, with plans to also support Azure, Google, and Hetzner.
+- For AWS, `IMDSv2` is also supported automatically (and preferred, using `v1` only as fallback).
+
+# The `imds_facts` module
+
+## Synopsis / Usage Example:
+
+```yaml
+tasks:
+    - name: Gather imds facts
+      timtrense.imds.imds_facts:
+          provider: aws # or auto, azure, gcp, hetzner
+          query: # hint: can also be just a single string
+              - common # alias for "all CHP-agnostic information"
+              - reservation_id # an AWS-native information
+          allow_failed_queries: # which information is not necessarily mandatory
+              - reservation_id
+              - tags # comes from "common"; on AWS access to tag metadata is restricted by default
+```
+
+## Parameters
+
+| Param                  | Default     | Explanation                                                           |
+| ---------------------- | ----------- | --------------------------------------------------------------------- |
+| `provider`             | `auto`      | Which strategy to use for communicating with the IMDS of the instance |
+| `query`                | `common`    | Which information to extract from IMDS                                |
+| `allow_failed_queries` | `[]` = none | Which queries are optional and failures are swallowed                 |
+| `http_timeout_seconds` | `0.5`       | The applied request timeout                                           |
+
+The following values work for `queries`:
+
+- `common` (alias): extracts all provider-agnostic information.
+- `all` (alias): extracts all information the selected provider has to offer.
+- `xyz`: extracts exactly the `xyz` field, no matter whether it is provider-agnostic or -specific.
+
+## Extracted information
+
+| Info                           | CHP        | Details                                                                                                                                          |
+| ------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cloud_hosting_provider`       | agnostic   | The normalized form of the CHP: `amazon`, `azure`, `google`, `hetzner`.                                                                          |
+| `imds_version`                 | specific   | The version number of IMDS protocol in use. For `amazon` that is either `"1"` or `"2"`. For `azure` it is the `api-version`.                     |
+| `instance_id`                  | specific   | The ID of the VM.                                                                                                                                |
+| `instance_type`                | specific   | The size/type of the VM.                                                                                                                         |
+| `image`                        | specific   | The disk image used for spawning the VM originally.                                                                                              |
+| `availability_zone`            | normalized | For AWS/Azure: Only the zone-identifying part of the AZ-ID.                                                                                      |
+| `region`                       | normalized | For AWS/Azure: Only the region-identifying part of the AZ-ID.                                                                                    |
+| `resource_group`               | specific   | For AWS same as `account`. For Azure: Resource Group ID.                                                                                         |
+| `account`                      | specific   | The name or ID of the owning tenant of the VM. (Not necessarily a root-account).                                                                 |
+| `tags`                         | agnostic   | A plain key-value map. If any CHP does not support values for labels/tags/annotations, the keys will be present with `""` (empty-string) values. |
+| `aws_account_id`               | AWS-only   | Same as `account`.                                                                                                                               |
+| `aws_architecture`             | AWS-only   | CPU ISA                                                                                                                                          |
+| `aws_reservation_id`           | AWS-only   | The instance savings plan.                                                                                                                       |
+| `aws_security_groups`          | AWS-only   | The network security groups.                                                                                                                     |
+| `aws_az_id`                    | AWS-only   | The availability zone ID.                                                                                                                        |
+| `aws_az`                       | AWS-only   | The availability zone name without normalizations (eg. `eu-central-1a`). I.e. region+zone.                                                       |
+| `aws_profile`                  | AWS-only   | The used hypervisor type (eg. `default_hvm`).                                                                                                    |
+| `aws_system`                   | AWS-only   | The used hypervisor type (eg. `nitro`).                                                                                                          |
+| `aws_hibernation_configured`   | AWS-only   | Whether hibernation is enabled.                                                                                                                  |
+| `aws_block_device_mapping_ami` | AWS-only   | To which block device the AMI is mounted.                                                                                                        |
+| `aws_...`                      | AWS-only   | Various other information. See `aws.py`                                                                                                          |
+
+While **most** information yields strings, the information is actually parsed into proper types, as much as possible.
