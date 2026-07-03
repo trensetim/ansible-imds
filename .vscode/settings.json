@@ -1,0 +1,12 @@
+{
+    "pylint.args": [
+        "--max-line-length=200"
+    ],
+    "pylint.path": [
+        "src/main/ansible-galaxy"
+    ],
+    "python.analysis.extraPaths": [
+        "src/main/ansible-galaxy"
+    ],
+    "python.analysis.includeExtraPathSymbolsInSymbolSearch": true
+}
