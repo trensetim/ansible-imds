@@ -47,37 +47,50 @@ The following values work for `queries`:
 
 ## Extracted information
 
-| Info                           | CHP        | Details                                                                                                                                                                                   |
-| ------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cloud_hosting_provider`       | agnostic   | The normalized form of the CHP: `amazon`, `azure`, `google`, `hetzner`.                                                                                                                   |
-| `imds_version`                 | specific   | The version number of IMDS protocol in use. For `amazon` that is either `"1"` or `"2"`. For `azure` it is the `api-version`.                                                              |
-| `instance_id`                  | specific   | The ID of the VM.                                                                                                                                                                         |
-| `instance_type`                | specific   | The size/type of the VM.                                                                                                                                                                  |
-| `image`                        | specific   | The disk image used for spawning the VM originally.                                                                                                                                       |
-| `availability_zone`            | normalized | For AWS/Azure: Only the zone-identifying part of the AZ-ID.                                                                                                                               |
-| `region`                       | normalized | For AWS/Azure: Only the region-identifying part of the AZ-ID.                                                                                                                             |
-| `resource_group`               | specific   | For AWS same as `account`. For Azure: Resource Group ID.                                                                                                                                  |
-| `account`                      | specific   | The name or ID of the owning tenant of the VM. (Not necessarily a root-account).                                                                                                          |
-| `tags`                         | agnostic   | A plain key-value map. If any CHP does not support values for labels/tags/annotations, the keys will be present with `""` (empty-string) values.                                          |
+| Info                           | CHP        | Details                                                                                                                                                                                                      |
+| ------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cloud_hosting_provider`       | agnostic   | The normalized form of the CHP: `amazon`, `azure`, `google`, `hetzner`.                                                                                                                                      |
+| `imds_version`                 | specific   | The version number of IMDS protocol in use. For `amazon` that is either `"1"` or `"2"`. For `azure` it is the `api-version`.                                                                                 |
+| `instance_id`                  | specific   | The ID of the VM.                                                                                                                                                                                            |
+| `instance_type`                | specific   | The size/type of the VM.                                                                                                                                                                                     |
+| `image`                        | specific   | The disk image used for spawning the VM originally.                                                                                                                                                          |
+| `availability_zone`            | normalized | For AWS/Azure: Only the zone-identifying part of the AZ-ID.                                                                                                                                                  |
+| `region`                       | normalized | For AWS/Azure: Only the region-identifying part of the AZ-ID.                                                                                                                                                |
+| `resource_group`               | specific   | For AWS same as `account`. For Azure: Resource Group ID.                                                                                                                                                     |
+| `account`                      | specific   | The name or ID of the owning tenant of the VM. (Not necessarily a root-account).                                                                                                                             |
+| `tags`                         | agnostic   | A plain key-value map. If any CHP does not support values for labels/tags/annotations, the keys will be present with `""` (empty-string) values.                                                             |
 | `userdata`                     | agnostic   | A plain-text (or `null`). The [userdata feature](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) of most CHPs. Will be `urlsafe base64` encoded (`a-zA-Z0-9_-`, to support binary data). |
-| `aws_account_id`               | AWS-only   | Same as `account`.                                                                                                                                                                        |
-| `aws_architecture`             | AWS-only   | CPU ISA                                                                                                                                                                                   |
-| `aws_reservation_id`           | AWS-only   | The instance savings plan.                                                                                                                                                                |
-| `aws_security_groups`          | AWS-only   | The network security groups.                                                                                                                                                              |
-| `aws_az_id`                    | AWS-only   | The availability zone ID.                                                                                                                                                                 |
-| `aws_az`                       | AWS-only   | The availability zone name without normalizations (eg. `eu-central-1a`). I.e. region+zone.                                                                                                |
-| `aws_profile`                  | AWS-only   | The used hypervisor type (eg. `default_hvm`).                                                                                                                                             |
-| `aws_system`                   | AWS-only   | The used hypervisor type (eg. `nitro`).                                                                                                                                                   |
-| `aws_hibernation_configured`   | AWS-only   | Whether hibernation is enabled.                                                                                                                                                           |
-| `aws_block_device_mapping_ami` | AWS-only   | To which block device the AMI is mounted.                                                                                                                                                 |
-| `aws_...`                      | AWS-only   | Various other information. See `aws.py`                                                                                                                                                   |
+| `aws_account_id`               | AWS-only   | Same as `account`.                                                                                                                                                                                           |
+| `aws_architecture`             | AWS-only   | CPU ISA                                                                                                                                                                                                      |
+| `aws_reservation_id`           | AWS-only   | The instance savings plan.                                                                                                                                                                                   |
+| `aws_security_groups`          | AWS-only   | The network security groups.                                                                                                                                                                                 |
+| `aws_az_id`                    | AWS-only   | The availability zone ID.                                                                                                                                                                                    |
+| `aws_az`                       | AWS-only   | The availability zone name without normalizations (eg. `eu-central-1a`). I.e. region+zone.                                                                                                                   |
+| `aws_profile`                  | AWS-only   | The used hypervisor type (eg. `default_hvm`).                                                                                                                                                                |
+| `aws_system`                   | AWS-only   | The used hypervisor type (eg. `nitro`).                                                                                                                                                                      |
+| `aws_hibernation_configured`   | AWS-only   | Whether hibernation is enabled.                                                                                                                                                                              |
+| `aws_block_device_mapping_ami` | AWS-only   | To which block device the AMI is mounted.                                                                                                                                                                    |
+| `aws_...`                      | AWS-only   | Various other information. See [aws.py](./src/main/ansible-galaxy/ansible_collections/timtrense/imds/plugins/module_utils/aws.py)                                                                            |
+| `az_physical_zone`             | Azure-only | [Physical Zone](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview?tabs=azure-cli#physical-and-logical-availability-zones)                                                      |
+| `az_logical_zone`              | Azure-only | [Logical Zone](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview?tabs=azure-cli#physical-and-logical-availability-zones)                                                       |
+| `az_placement_group_id`        | Azure-only | [Placement Group](https://learn.microsoft.com/en-us/azure/virtual-machines/co-location)                                                                                                                      |
+| `az_priority`                  | Azure-only | Spot-VM priority.                                                                                                                                                                                            |
+| `az_eviction_policy`           | Azure-only | Spot-VM eviction policy.                                                                                                                                                                                     |
+| `az_subscription_id`           | Azure-only | Matches `account`.                                                                                                                                                                                           |
+| `az_scale_set_name`            | Azure-only | Name of the scale set.                                                                                                                                                                                       |
+| `az_publisher`                 | Azure-only | Part of the `image`.                                                                                                                                                                                         |
+| `az_sku`                       | Azure-only | Part of the `image`.                                                                                                                                                                                         |
+| `az_version`                   | Azure-only | Part of the `image`. It is synthesized as `publisher:sku:version`.                                                                                                                                           |
+| `az_...`                       | Azure-only | Various other information. See [az.py](./src/main/ansible-galaxy/ansible_collections/timtrense/imds/plugins/module_utils/azure.py)                                                                           |
 
 While **most** information yields strings, the information is actually parsed into proper types, as much as possible.
 
 # Notes about supported Providers
 
-- AWS: `IMDSv2` is also supported automatically (and preferred, using `v1` only as fallback).
-- Azure
+- AWS:
+  - `IMDSv2` is also supported automatically (and preferred, using `v1` only as fallback).
+- Azure:
+  - The `image` is synthesized as `publisher:sku:version`.
 
 # Note on TLS
 
