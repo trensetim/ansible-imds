@@ -45,21 +45,21 @@ The following values work for `queries`:
 - `all` (alias): extracts all information the selected provider has to offer.
 - `xyz`: extracts exactly the `xyz` field, no matter whether it is provider-agnostic or -specific.
 
-## Extracted information
+## Extracted facts
 
-| Info                           | CHP        | Details                                                                                                                                                                                                      |
+| Info                           | CHP-Format | Details                                                                                                                                                                                                      |
 | ------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `cloud_hosting_provider`       | agnostic   | The normalized form of the CHP: `amazon`, `azure`, `google`, `hetzner`.                                                                                                                                      |
+| `imds_cloud_hosting_provider`  | agnostic   | The normalized form of the CHP: `amazon`, `azure`, `google`, `hetzner`.                                                                                                                                      |
 | `imds_version`                 | specific   | The version number of IMDS protocol in use. For `amazon` that is either `"1"` or `"2"`. For `azure` it is the `api-version`.                                                                                 |
-| `instance_id`                  | specific   | The ID of the VM.                                                                                                                                                                                            |
-| `instance_type`                | specific   | The size/type of the VM.                                                                                                                                                                                     |
-| `image`                        | specific   | The disk image used for spawning the VM originally.                                                                                                                                                          |
-| `availability_zone`            | normalized | For AWS/Azure: Only the zone-identifying part of the AZ-ID.                                                                                                                                                  |
-| `region`                       | normalized | For AWS/Azure: Only the region-identifying part of the AZ-ID.                                                                                                                                                |
-| `resource_group`               | specific   | For AWS same as `account`. For Azure: Resource Group ID.                                                                                                                                                     |
-| `account`                      | specific   | The name or ID of the owning tenant of the VM. (Not necessarily a root-account).                                                                                                                             |
-| `tags`                         | agnostic   | A plain key-value map. If any CHP does not support values for labels/tags/annotations, the keys will be present with `""` (empty-string) values.                                                             |
-| `userdata`                     | agnostic   | A plain-text (or `null`). The [userdata feature](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) of most CHPs. Will be `urlsafe base64` encoded (`a-zA-Z0-9_-`, to support binary data). |
+| `imds_instance_id`             | specific   | The ID of the VM.                                                                                                                                                                                            |
+| `imds_instance_type`           | specific   | The size/type of the VM.                                                                                                                                                                                     |
+| `imds_image`                   | specific   | The disk image used for spawning the VM originally.                                                                                                                                                          |
+| `imds_availability_zone`       | specific   | The AZ inside the region.                                                                                                                                                                                    |
+| `imds_region`                  | specific   | The geographical region of the datacenter cluster.                                                                                                                                                           |
+| `imds_resource_group`          | specific   | For AWS same as `account`. For Azure: Resource Group ID.                                                                                                                                                     |
+| `imds_account`                 | specific   | The name or ID of the owning tenant of the VM. (Not necessarily a root-account).                                                                                                                             |
+| `imds_tags`                    | agnostic   | A plain key-value map. If any CHP does not support values for labels/tags/annotations, the keys will be present with `""` (empty-string) values.                                                             |
+| `imds_userdata`                | agnostic   | A plain-text (or `null`). The [userdata feature](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) of most CHPs. Will be `urlsafe base64` encoded (`a-zA-Z0-9_-`, to support binary data). |
 | `aws_account_id`               | AWS-only   | Same as `account`.                                                                                                                                                                                           |
 | `aws_architecture`             | AWS-only   | CPU ISA                                                                                                                                                                                                      |
 | `aws_reservation_id`           | AWS-only   | The instance savings plan.                                                                                                                                                                                   |
@@ -78,19 +78,26 @@ The following values work for `queries`:
 | `az_eviction_policy`           | Azure-only | Spot-VM eviction policy.                                                                                                                                                                                     |
 | `az_subscription_id`           | Azure-only | Matches `account`.                                                                                                                                                                                           |
 | `az_scale_set_name`            | Azure-only | Name of the scale set.                                                                                                                                                                                       |
-| `az_publisher`                 | Azure-only | Part of the `image`.                                                                                                                                                                                         |
-| `az_sku`                       | Azure-only | Part of the `image`.                                                                                                                                                                                         |
-| `az_version`                   | Azure-only | Part of the `image`. It is synthesized as `publisher:sku:version`.                                                                                                                                           |
+| `az_publisher`                 | Azure-only | Part of the `imds_image`.                                                                                                                                                                                    |
+| `az_sku`                       | Azure-only | Part of the `imds_image`.                                                                                                                                                                                    |
+| `az_version`                   | Azure-only | Part of the `imds_image`. It is synthesized as `publisher:sku:version`.                                                                                                                                      |
 | `az_...`                       | Azure-only | Various other information. See [az.py](./src/main/ansible-galaxy/ansible_collections/timtrense/imds/plugins/module_utils/azure.py)                                                                           |
 
 While **most** information yields strings, the information is actually parsed into proper types, as much as possible.
 
+CHP-Formats:
+
+- `agnostic`: The contained values will be strictly specified by this module and do not change format across CHPs
+- `specific`: The CHP-native representation is used.
+- `xy-only`: This field only exists for CHP `xy`
+
 # Notes about supported Providers
 
 - AWS:
-  - `IMDSv2` is also supported automatically (and preferred, using `v1` only as fallback).
+    - `IMDSv2` is also supported automatically (and preferred, using `v1` only as fallback).
+    - The native-format of the availability zone (eg. `eu-central-1a`) is split into `imds_region` and `imds_availability_zone` (eg. `eu-central-1`+`a`)
 - Azure:
-  - The `image` is synthesized as `publisher:sku:version`.
+    - The `imds_image` is synthesized as `publisher:sku:version`.
 
 # Note on TLS
 
