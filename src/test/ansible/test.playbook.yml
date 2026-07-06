@@ -8,6 +8,8 @@
         query: [availability_zone, userdata]
         allow_failed_queries: [tags]
         http_timeout_seconds: 0.1
+        provider_params:
+          hetzner_account: abc
     - name: Dump test output
       debug:
         var: ansible_facts

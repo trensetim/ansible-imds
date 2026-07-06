@@ -156,7 +156,7 @@ class ImdsProvider:
         """
         Returns only the availability zone name/ID of the instance in the native naming schema of the cloud hosting provider.
         Will automatically remove possible region prefixes that some providers natively have (eg. AWS would return "eu-central-1a" instead of just "a", so this gets normalized here).
-        Examples: AWS "a", Azure "1", GCP "b", Hetzner "1"
+        Examples: AWS "a", Azure "1", GCP "b", Hetzner "nbg1-dc3"
         """
         pass
 
@@ -164,7 +164,7 @@ class ImdsProvider:
     def get_region(self) -> str:
         """
         Returns the region name of the instance in the native naming schema of the cloud hosting provider.
-        Examples: AWS "eu-central-1", Azure "westeurope", GCP "europe-west1", Hetzner "nbg1"
+        Examples: AWS "eu-central-1", Azure "westeurope", GCP "europe-west1", Hetzner "eu-central"
         """
         pass
 
