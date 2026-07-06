@@ -46,6 +46,8 @@ class CommonInformation(Enum):
     """AWS accountId, Azure subscriptionId, GCP projectId, Hetzner projectId"""
     TAGS = "tags"
     """AWS tags, Azure tags, GCP labels, Hetzner labels"""
+    USERDATA = "userdata"
+    """The user-supplied data when creating the VM. Usually consumed by cloud-init"""
 
 class ImdsProvider:
     http_timeout_seconds: int = 2
@@ -102,6 +104,8 @@ class ImdsProvider:
                 return self.get_account()
             elif info == CommonInformation.TAGS.name:
                 return self.get_tags()
+            elif info == CommonInformation.USERDATA.name:
+                return self.get_userdata()
 
         raise NotImplementedError(f"Base class ImdsProvider only supports CommonInformation, not \"{info}\".")
 
@@ -172,6 +176,16 @@ class ImdsProvider:
         """
         Returns the tags of the instance in the native naming schema of the cloud hosting provider.
         Examples: AWS {"Name": "my-instance", "Environment": "production"}, Azure {"Name": "my-instance", "Environment": "production"}, GCP {"Name": "my-instance", "Environment": "production"}, Hetzner {"Name": "my-instance", "Environment": "production"}
+        """
+        pass
+
+    @abstractmethod
+    def get_userdata(self) -> str | None:
+        """
+        Returns the base64-encoded userdata of the instance.
+        This is oftentimes consumed by cloud-init.
+        Base64-encoding is applied to support binary contents.
+        Base64-encoding uses the URL-safe variant (characters a-z, A-Z, 0-9, "-" and "_").
         """
         pass
 

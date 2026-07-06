@@ -1,3 +1,5 @@
+import base64
+import binascii
 from enum import Enum
 from functools import reduce
 
@@ -46,14 +48,11 @@ class AzureInstanceInformation(Enum):
     VM_SIZE = "compute.vmSize" # matches CommonInformation.INSTANCE_TYPE
     VERSION = "compute.version" # version of the image
 
-    # we explicitly do not provide the userData, since it might be sensible and thus should better not be read via IMDS if users want to trust it
-    # CUSTOM_DATA = "customData" # deprecated as of https://learn.microsoft.com/de-de/azure/virtual-machines/instance-metadata-service?tabs=linux
-    # USER_DATA = "userData"
-
-
 class AzureProvider(ImdsProvider):
     # payload response caching (this stuff won't realistically change across the lifetime of an ansible play)
     _cached_instance: dict[str, any] | None = None
+    _cached_userdata_b64: str | None = None
+    """URL-safe base64-encoded user data, as returned by Azure IMDS"""
 
     _PROTOCOL_VERSION = "2025-11-11"
 
@@ -129,3 +128,24 @@ class AzureProvider(ImdsProvider):
     def get_tags(self):
         tagslist: list[dict[str, str]] = self._query().get("compute", {}).get("tagsList", [])
         return {tag["name"]: tag["value"] for tag in tagslist}
+
+    def get_userdata(self) -> str | None:
+        if self._cached_userdata_b64 is not None:
+            return self._cached_userdata_b64
+
+        raw_b64_encoded_text: str = self._query().get("compute", {}).get("userData", "")
+        if raw_b64_encoded_text == "":
+            return None
+
+        # Azure Docs does not mention the base64 alphabet explicitly.
+        # We assume standard RFC 4648, yet need to validate it
+        raw_bytes: bytes
+        try:
+            raw_bytes = base64.b64decode(raw_b64_encoded_text, altchars=b"+/", validate=True)
+        except binascii.Error:
+            # in case the assumption breaks, we try again using the URL-safe base64 alphabet (which is also RFC 4648, but with different characters)
+            # --> may throw again
+            raw_bytes = base64.b64decode(raw_b64_encoded_text, altchars=b"-_", validate=True)
+
+        self._cached_userdata_b64 = base64.b64encode(raw_bytes, altchars=b"-_").decode()
+        return self._cached_userdata_b64

@@ -1,3 +1,4 @@
+import base64
 from enum import Enum
 from time import time
 
@@ -49,6 +50,9 @@ class AwsProvider(ImdsProvider):
     _cached_instance_identity: dict[str, any] | None = None
     _cached_extended_metadata: dict[str, any] = {}
 
+    # instance userdata can only be changed in AWS upon EC2 instance reboot --> cacheable indefinitely during a single ansible play
+    _cached_userdata_b64: str | None = None
+
     def __init__(self):
         super().__init__()
 
@@ -56,6 +60,13 @@ class AwsProvider(ImdsProvider):
     def _get_url(path: str) -> str:
         """Construct the full URL for the AWS IMDS endpoint."""
         return f"http://{COMMON_IMDS_IPV4}/{path}"
+
+    def _get_v2_headers(self, additional_headers: dict[str, str] | None = None) -> dict[str, str]:
+        """Construct the headers for an IMDSv2 request."""
+        headers = {"X-aws-ec2-metadata-token": self._get_v2_auth_token()}
+        if additional_headers:
+            headers.update(additional_headers)
+        return headers
 
     def _get_v2_auth_token(self) -> str:
         """Query IMDSv2 auth token."""
@@ -179,3 +190,21 @@ class AwsProvider(ImdsProvider):
         # this might or might not work: access to tags can be disabled
         # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/work-with-tags-in-IMDS.html
         return json.loads(self._query_extended_metadata("tag-sets/instance"))
+
+    def get_userdata(self):
+        if self._cached_userdata_b64 is None:
+            import requests
+
+            response = requests.request(
+                method="GET",
+                url=self._get_url("2026-04-15/user-data"),
+                headers=self._get_v2_headers(additional_headers=None),
+                timeout=self.http_timeout_seconds
+            )
+            if response.status_code == 200:
+                content = response.content
+                if content is not None and len(content) > 0:
+                    self._cached_userdata_b64 = base64.b64encode(response.content, altchars=b"-_").decode()
+
+        # self._cached_userdata_b64 might still be None if the user-data is empty or not set, so we return None in that case
+        return self._cached_userdata_b64
