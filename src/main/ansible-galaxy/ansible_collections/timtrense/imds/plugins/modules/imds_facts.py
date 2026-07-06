@@ -5,6 +5,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.timtrense.imds.plugins.module_utils.azure import AzureProvider
 from ansible_collections.timtrense.imds.plugins.module_utils.imds_provider import CommonInformation, ImdsProvider
 from ansible_collections.timtrense.imds.plugins.module_utils.aws import AwsProvider
+from ansible_collections.timtrense.imds.plugins.module_utils.hetzner import HetznerProvider
 
 MODULE = AnsibleModule(
     argument_spec={
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     provider: ImdsProvider
 
     if requested_provider == "auto":
-        for provider_class in [AwsProvider, AzureProvider]:
+        for provider_class in [AwsProvider, AzureProvider, HetznerProvider]:
             provider = provider_class(provider_params)
             if provider.detect():
                 break
@@ -104,6 +105,8 @@ if __name__ == '__main__':
         provider = AwsProvider(provider_params)
     elif requested_provider == "az" or requested_provider == "azure" or requested_provider == "ms" or requested_provider == "microsoft":
         provider = AzureProvider(provider_params)
+    elif requested_provider == "hz" or requested_provider == "hetzner" or requested_provider == "hcloud":
+        provider = HetznerProvider(provider_params)
     else:
         MODULE.fail_json(msg=f"Provider {requested_provider} is not supported yet", **result) # TODO Azure, Hetzner, GCP
 

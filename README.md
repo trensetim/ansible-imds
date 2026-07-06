@@ -99,6 +99,9 @@ CHP-Formats:
     - The native-format of the availability zone (eg. `eu-central-1a`) is split into `imds_region` and `imds_availability_zone` (eg. `eu-central-1`+`a`)
 - `azure`:
     - The `imds_image` is synthesized as `publisher:sku:version`.
+- `hetzner`
+    - Requires [PyYAML](https://pypi.org/project/PyYAML/) on the host, since the IMDS-endpoint returns yaml
+    - Much of the information is **not directly available** via [Hetzner's version of IMDS](https://docs.hetzner.cloud/reference/cloud#description/server-metadata), but rather requires access to the hetzner cloud API. Configure such access by setting `provider_params.hetzner_api_token`. If you choose to not provide API-access, the non-determinable fields will be omitted from output (ie. be implicitly-null), unless you explicitly include them (in which case they show as `"unknown"`).
 
 The `provider_params` names are prefixed with the provider name, such that auto-detection does not yield conflicts in multicloud scenarios.
 

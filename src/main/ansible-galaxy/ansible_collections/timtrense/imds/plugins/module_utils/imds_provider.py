@@ -70,7 +70,7 @@ class ImdsProvider:
     def get_supported_informations(self) -> set[str]:
         """
         Returns the set of keys that are usable as "info" parameter in the query() method.
-        Subclasses MUST also include (and not override) those, returned by this method.
+        Subclasses SHOULD also include (and MUST NOT override/redefine) those, returned by this method's base implementation.
         The returned keys are case-sensitive, yet no differently cased keys are allowed to be returned by subclasses.
         Subclasses SHOULD return uppercase-only keys that are usable for lookup into a subclass-provided enum class.
 
