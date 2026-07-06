@@ -4,8 +4,8 @@
   tasks:
     - name: Gather imds facts
       timtrense.imds.imds_facts:
-        provider: aws
-        query: [availability_zone, region, reservation_id]
+        provider: auto
+        query: [availability_zone, userdata]
         allow_failed_queries: [tags]
         http_timeout_seconds: 0.1
     - name: Dump test output

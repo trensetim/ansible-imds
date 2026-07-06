@@ -110,6 +110,14 @@ class ImdsProvider:
         raise NotImplementedError(f"Base class ImdsProvider only supports CommonInformation, not \"{info}\".")
 
     @abstractmethod
+    def detect(self) -> bool:
+        """
+        Detects if the current host is likely running on this cloud hosting provider.
+        Returns True if it most-likely is, False otherwise.
+        """
+        pass
+
+    @abstractmethod
     def get_type(self) -> CloudHostingProviderType:
         """Returns the cloud provider type."""
         pass

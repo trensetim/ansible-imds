@@ -53,6 +53,8 @@ class AwsProvider(ImdsProvider):
     # instance userdata can only be changed in AWS upon EC2 instance reboot --> cacheable indefinitely during a single ansible play
     _cached_userdata_b64: str | None = None
 
+    _API_VERSION = "2026-04-15"
+
     def __init__(self):
         super().__init__()
 
@@ -77,7 +79,7 @@ class AwsProvider(ImdsProvider):
         try:
             response_text = self._http_request(
                 method="PUT",
-                url=self._get_url("latest/api/token"),
+                url=self._get_url("latest/api/token"), # sadly the token endpoint is not versioned?!
                 headers={"X-aws-ec2-metadata-token-ttl-seconds": str(self._token_ttl_seconds)}
             )
             self._cached_token = response_text
@@ -105,12 +107,12 @@ class AwsProvider(ImdsProvider):
 
     def _query_instance_identity_document(self) -> dict[str, any]:
         if self._cached_instance_identity is None:
-            self._cached_instance_identity = json.loads(self._make_request("2026-04-15/dynamic/instance-identity/document"))
+            self._cached_instance_identity = json.loads(self._make_request(f"{self._API_VERSION}/dynamic/instance-identity/document"))
         return self._cached_instance_identity
 
     def _query_extended_metadata(self, field: str) -> str:
         if field not in self._cached_extended_metadata:
-            self._cached_extended_metadata[field] = self._make_request(f"2026-04-15/meta-data/{field}")
+            self._cached_extended_metadata[field] = self._make_request(f"{self._API_VERSION}/meta-data/{field}")
         return self._cached_extended_metadata[field]
 
     def get_supported_informations(self) -> set[str]:
@@ -134,6 +136,14 @@ class AwsProvider(ImdsProvider):
             return strval
 
         raise NotImplementedError(f"AWS provider does not support querying information \"{info}\".")
+
+    def detect(self) -> bool:
+        """Detect whether we are running on an AWS EC2 instance."""
+        try:
+            self._make_request(f"{self._API_VERSION}/meta-data/instance-id")
+            return True
+        except requests.RequestException:
+            return False
 
     def get_type(self) -> CloudHostingProviderType:
         return CloudHostingProviderType.AWS
@@ -197,7 +207,7 @@ class AwsProvider(ImdsProvider):
 
             response = requests.request(
                 method="GET",
-                url=self._get_url("2026-04-15/user-data"),
+                url=self._get_url(f"{self._API_VERSION}/user-data"),
                 headers=self._get_v2_headers(additional_headers=None),
                 timeout=self.http_timeout_seconds
             )

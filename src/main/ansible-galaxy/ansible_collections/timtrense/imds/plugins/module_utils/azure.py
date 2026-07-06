@@ -73,8 +73,6 @@ class AzureProvider(ImdsProvider):
         except requests.RequestException as e:
             raise requests.RequestException(f"Failed to get IMDS metadata at Azure: {e}", response=e.response)
 
-
-
     def get_supported_informations(self) -> set[str]:
         return super().get_supported_informations() \
             | {info.name.lower() for info in AzureInstanceInformation}
@@ -93,6 +91,14 @@ class AzureProvider(ImdsProvider):
             return result
 
         raise NotImplementedError(f"Azure provider does not support querying information \"{info}\".")
+
+    def detect(self) -> bool:
+        """Detect whether we are running on an Azure VM."""
+        try:
+            self._query()
+            return True
+        except requests.RequestException:
+            return False
 
     def get_type(self) -> CloudHostingProviderType:
         return CloudHostingProviderType.AZ

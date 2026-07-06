@@ -88,7 +88,12 @@ if __name__ == '__main__':
     provider: ImdsProvider
 
     if requested_provider == "auto":
-        MODULE.fail_json(msg=f"Provider autodetection is not supported yet", **result) # TODO
+        for provider_class in [AwsProvider, AzureProvider]:
+            provider = provider_class()
+            if provider.detect():
+                break
+        else:
+            MODULE.fail_json(msg="Could not detect cloud hosting provider", **result)
     elif requested_provider == "aws" or requested_provider == "amazon":
         provider = AwsProvider()
     elif requested_provider == "az" or requested_provider == "azure" or requested_provider == "ms" or requested_provider == "microsoft":
