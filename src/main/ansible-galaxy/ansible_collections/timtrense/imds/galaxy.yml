@@ -1,9 +1,9 @@
 namespace: timtrense
 name: imds
-version: 1.0.0
+version: 1.0.2
 readme: README.md
 authors:
-- Tim Trense <trensetim@gmail.com>
+  - Tim Trense <trensetim@gmail.com>
 description: |
   Work with the instance-metadata-service (IMDS) for various cloud hosting providers (CHP).
   Supports making common cross-CHP-available things CHP-agnostic (best-effort),
@@ -24,4 +24,3 @@ issues: https://gitlab.timtrense.com/ansible/imds/-/issues
 
 # Some directories and files like 'galaxy.yml', '*.pyc', '*.retry', and '.git' are always filtered.
 build_ignore: []
-

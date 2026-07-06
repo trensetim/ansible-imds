@@ -1,0 +1,48 @@
+.common-pipeline-config: &common-pipeline-config
+    image: debian:13
+    tags:
+      - docker
+.gitlab-ci-common-snippets:
+  - &common-git-restore | # discard any file modifications from other jobs, ie. version-suffixing
+      git restore -- .
+  - &common-apt-install-tools |
+      apt-get update && apt-get install -y curl git yq ansible
+  - &common-ansible-build |
+      rm -rf build/*
+      ansible-galaxy collection build src/main/ansible-galaxy/ansible_collections/timtrense/imds --output-path build/
+  - &common-publish |
+      file="$(basename "$(ls build/*.tar.gz | head -n1)")"
+      version="$(echo "$file" | sed -E 's/.*imds-([0-9]+\.[0-9]+\.[0-9]+(-dev)?).tar.gz/\1/')"
+      dest_name="$(echo "$file" | sed -E 's/(.*imds).+.tar.gz/\1.tar.gz/')"
+
+      curl \
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          --upload-file "build/${file}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/imds/${version}/${dest_name}"
+
+build_dev:
+  <<: *common-pipeline-config
+  script:
+    - *common-apt-install-tools
+    - *common-git-restore
+    - > # suffix "galaxy.yml#version" with "-dev"
+      yq --in-place -Y
+      '.version = .version + "-dev"'
+      src/main/ansible-galaxy/ansible_collections/timtrense/imds/galaxy.yml
+    - *common-ansible-build
+    - *common-publish
+
+build_release:
+  <<: *common-pipeline-config
+  rules:
+    - if: $CI_COMMIT_TAG =~ /release\/.+/
+  script:
+    - *common-apt-install-tools
+    - *common-git-restore
+    - | # rewrite version to match commit tag
+      CI_COMMIT_TAG=${CI_COMMIT_TAG#release/}
+      yq --in-place -Y \
+        ".version = \"${CI_COMMIT_TAG}\"" \
+        src/main/ansible-galaxy/ansible_collections/timtrense/imds/galaxy.yml
+    - *common-ansible-build
+    - *common-publish
