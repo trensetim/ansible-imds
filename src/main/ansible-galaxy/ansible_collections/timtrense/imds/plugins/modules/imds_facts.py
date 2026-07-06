@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.timtrense.imds.plugins.module_utils.azure import AzureProvider
 from ansible_collections.timtrense.imds.plugins.module_utils.imds_provider import CommonInformation, ImdsProvider
 from ansible_collections.timtrense.imds.plugins.module_utils.aws import AwsProvider
 
@@ -90,6 +91,8 @@ if __name__ == '__main__':
         MODULE.fail_json(msg=f"Provider autodetection is not supported yet", **result) # TODO
     elif requested_provider == "aws" or requested_provider == "amazon":
         provider = AwsProvider()
+    elif requested_provider == "az" or requested_provider == "azure" or requested_provider == "ms" or requested_provider == "microsoft":
+        provider = AzureProvider()
     else:
         MODULE.fail_json(msg=f"Provider {requested_provider} is not supported yet", **result) # TODO Azure, Hetzner, GCP
 
