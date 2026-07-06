@@ -56,8 +56,8 @@ class AzureProvider(ImdsProvider):
 
     _PROTOCOL_VERSION = "2025-11-11"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, params: dict[str, any] = {}, http_timeout_seconds: int | None = None):
+        super().__init__(params=params, http_timeout_seconds=http_timeout_seconds)
 
     def _query(self) -> dict[str, any]:
         """Make a request to the Azure IMDS endpoint."""

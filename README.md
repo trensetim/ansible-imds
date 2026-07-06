@@ -38,6 +38,7 @@ tasks:
 | `query`                | `common`    | Which information to extract from IMDS                                |
 | `allow_failed_queries` | `[]` = none | Which queries are optional and failures are swallowed                 |
 | `http_timeout_seconds` | `0.5`       | The applied request timeout                                           |
+| `provider_params`      | `{}`        | Allows passing parameters to the selected provider                    |
 
 The following values work for `queries`:
 
@@ -93,11 +94,13 @@ CHP-Formats:
 
 # Notes about supported Providers
 
-- AWS:
+- `aws`:
     - `IMDSv2` is also supported automatically (and preferred, using `v1` only as fallback).
     - The native-format of the availability zone (eg. `eu-central-1a`) is split into `imds_region` and `imds_availability_zone` (eg. `eu-central-1`+`a`)
-- Azure:
+- `azure`:
     - The `imds_image` is synthesized as `publisher:sku:version`.
+
+The `provider_params` names are prefixed with the provider name, such that auto-detection does not yield conflicts in multicloud scenarios.
 
 # Note on TLS
 

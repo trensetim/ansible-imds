@@ -51,6 +51,11 @@ class CommonInformation(Enum):
 
 class ImdsProvider:
     http_timeout_seconds: int = 2
+    params: dict[str, any] = {}
+
+    def __init__(self, params: dict[str, any] = {}, http_timeout_seconds: int | None = None):
+        self.params = params
+        self.http_timeout_seconds = http_timeout_seconds if http_timeout_seconds is not None else 2
 
     def _http_request(self, method: str, url: str, headers: dict[str, str] | None = None) -> str:
         """Make a simple HTTP request to the given endpoint (stupidly simple wrapper around requests lib)."""

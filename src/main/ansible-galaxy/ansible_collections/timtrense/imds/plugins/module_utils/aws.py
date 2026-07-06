@@ -55,8 +55,8 @@ class AwsProvider(ImdsProvider):
 
     _API_VERSION = "2026-04-15"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, params: dict[str, any] = {}, http_timeout_seconds: int | None = None):
+        super().__init__(params=params, http_timeout_seconds=http_timeout_seconds)
 
     @staticmethod
     def _get_url(path: str) -> str:

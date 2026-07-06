@@ -30,6 +30,11 @@ MODULE = AnsibleModule(
             "type": "float",
             "required": False,
             "default": 0.5
+        },
+        "provider_params": {
+            "type": "dict",
+            "required": False,
+            "default": {}
         }
     },
     supports_check_mode=True
@@ -85,19 +90,20 @@ if __name__ == '__main__':
     }
 
     requested_provider: str = MODULE.params["provider"].lower()
+    provider_params: dict = MODULE.params["provider_params"]
     provider: ImdsProvider
 
     if requested_provider == "auto":
         for provider_class in [AwsProvider, AzureProvider]:
-            provider = provider_class()
+            provider = provider_class(provider_params)
             if provider.detect():
                 break
         else:
             MODULE.fail_json(msg="Could not detect cloud hosting provider", **result)
     elif requested_provider == "aws" or requested_provider == "amazon":
-        provider = AwsProvider()
+        provider = AwsProvider(provider_params)
     elif requested_provider == "az" or requested_provider == "azure" or requested_provider == "ms" or requested_provider == "microsoft":
-        provider = AzureProvider()
+        provider = AzureProvider(provider_params)
     else:
         MODULE.fail_json(msg=f"Provider {requested_provider} is not supported yet", **result) # TODO Azure, Hetzner, GCP
 
