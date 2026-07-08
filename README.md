@@ -1,7 +1,9 @@
 # Ansible collection "imds"
 
 The `instance metadata service` (IMDS) is a nonstandard way that cloud hosting providers (CHP, eg. AWS, Azure, Google Cloud, Alibaba, Lidl, Hetzner) expose infrastructure-related information to VMs.
-It is usually a HTTP/REST-ful API at a well-known, non-routable IP address that is local to the VM.
+
+For CHPs, it is usually a HTTP/REST-ful API at a well-known, non-routable IP address that is local to the VM.
+For on-premises hypervisors (eg. VMware, HyperV, QEMU, KVM, Xen), usually a guest agent software is required to read "guestinfo" from the hypervisor - eg. via virtual CDROM disks, DMI/SMBIOS, or proprietary protocols like Microsoft KVP Exchange, or XenStore.
 
 Since IMDS is not standardized in any way, it is more a "generally quite common idea" rather than a protocol.
 This makes it cumbersome for ansible plays to query information from it.
@@ -113,6 +115,21 @@ CHP-Formats:
     - Note that access to the API-only information requires shipping the access token to the remote server during module execution. This may or may not be acceptable for your case to even ship a readonly token. If you are okay with getting only the API-provided information (ie. without contacting IMDS at all), you may configure the task/play to be delegated to another host that you trust (eg. localhost) and then use `provider_params.hetzner_instance_id` to override the Server ID.
 
 The `provider_params` names are prefixed with the provider name, such that auto-detection does not yield conflicts in multicloud scenarios.
+
+# Roadmap
+
+The following providers are not yet implemented, but planned:
+
+- `google` Google Cloud
+- `lidl` Lidl Cloud
+- `alibaba` Alibaba Cloud
+- `kvm` KVM via dmidecode/SMBIOS (eg. used by Linux KVM or Proxmox VE)
+- `vsphere` VMware vSphere/ESXi via open-vm-tools "guestinfo"
+- `hyperv` HyperV via MS KVP Exchange
+- `xen` Xen via XenStore
+
+Contributions welcome: Please contact the maintainers to get started. \
+Support welcome: Please contact the maintainers if you want to provide testing infrastructure.
 
 # Note on TLS
 
